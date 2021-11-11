@@ -1,0 +1,34 @@
+//This procedure is written by Szabolcs. It finds render window
+global proc string getRenderWindowPanel()
+{
+string $renderPanel;
+string $renderPanels[] = `getPanel -scriptType "renderWindowPanel"`;
+
+if( size($renderPanels) == 0 )
+{
+$renderPanel = `scriptedPanel -type "renderWindowPanel" -unParent`;
+scriptedPanel -e -label `interToUI $renderPanel` $renderPanel;
+}
+else
+{
+$renderPanel = $renderPanels[0];
+}
+
+return $renderPanel;
+}
+
+//Fancy variable for render window stuff
+$MyThing = getRenderWindowPanel();
+//List of all .fbx files in particular directory (in D:\fbx_output)
+$myFileList = `getFileList -folder "D:\fbx_output" -filespec "*.fbx"`;
+
+//Output image format to .PNG
+setAttr defaultRenderGlobals.imageFormat 32;
+
+//Main cycle
+for ($myFile in $myFileList) {
+    $myStuff = `file -import -rnn ("D:/fbx_output/" + $myFile)`; //import some stuff from fbx
+    render; //render it from current camera
+    delete($myStuff); //delete all the stuff that was imported from fbx
+    renderWindowEditor -edit -writeImage ("D:/MayaFBXRender/"+$myFile) $MyThing; //save render result to D:/MayaFBXRender/
+}
